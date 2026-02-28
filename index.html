@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>24/7 Industrial Roster · Strict C Rest Rule</title>
+    <!-- xlsx library for Excel export -->
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
+    <!-- html2canvas for JPG screenshot -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Roboto, system-ui, sans-serif;
+        }
+        body {
+            background: #f0f4f8;
+            margin: 0;
+            min-height: 100vh;
+            padding: 2rem 1rem;
+            display: flex;
+            justify-content: center;
+        }
+        .dashboard {
+            max-width: 1600px;
+            width: 100%;
+            background: white;
+            border-radius: 32px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.08);
+            overflow: hidden;
+            padding: 2rem;
+        }
+        h1 {
+            font-weight: 500;
+            font-size: 1.8rem;
+            margin: 0 0 0.25rem 0;
+            color: #1a2639;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        h1 small {
+            font-size: 1rem;
+            font-weight: 400;
+            background: #e9ecf3;
+            padding: 0.3rem 1rem;
+            border-radius: 40px;
+            color: #2c3e50;
+        }
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+        .card {
+            background: #f9fafc;
+            border-radius: 24px;
+            padding: 1.5rem;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.02), 0 6px 12px -8px rgba(0,20,40,0.1);
+        }
+        .card h3 {
+            margin-top: 0;
+            margin-bottom: 1.2rem;
+            font-weight: 500;
+            color: #1e3a5f;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .input-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            align-items: flex-end;
+            margin-bottom: 1.5rem;
+        }
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            flex: 1 1 160px;
+        }
+        .input-group label {
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #4b5e77;
+        }
+        .input-group input, .input-group select {
+            background: white;
+            border: 1px solid #ccd7e6;
+            border-radius: 16px;
+            padding: 0.7rem 1rem;
+            font-size: 0.95rem;
+            transition: 0.15s;
+        }
+        .input-group input:focus, .input-group select:focus {
+            outline: none;
+            border-color: #3b6ea5;
+            box-shadow: 0 0 0 3px rgba(59,110,165,0.15);
+        }
+        button {
+            background: #1e3a5f;
+            color: white;
+            border: none;
+            padding: 0.7rem 1.6rem;
+            border-radius: 40px;
+            font-weight: 500;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: 0.15s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 8px rgba(0,30,60,0.1);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        button.secondary {
+            background: white;
+            color: #1e3a5f;
+            border: 1px solid #bdc9db;
+            box-shadow: none;
+        }
+        button.small-remove {
+            background: #f0eef2;
+            color: #ac3b3b;
+            border: none;
+            box-shadow: none;
+            padding: 2px 8px;
+            margin-left: 8px;
+            font-size: 0.7rem;
+            border-radius: 30px;
+            font-weight: 600;
+            border: 1px solid #e0c9c9;
+        }
+        button.small-remove:hover {
+            background: #f5d5d5;
+            color: #a00000;
+        }
+        button:hover {
+            background: #143049;
+            transform: translateY(-2px);
+        }
+        button.secondary:hover {
+            background: #ecf2f9;
+            border-color: #8fa3c0;
+        }
+        .employee-list-area {
+            background: white;
+            border-radius: 20px;
+            padding: 1rem 1.2rem;
+            border: 1px solid #dde5ef;
+            max-height: 240px;
+            overflow-y: auto;
+            font-size: 0.95rem;
+        }
+        .employee-tag {
+            background: #e6edf6;
+            border-radius: 30px;
+            padding: 0.3rem 0.9rem;
+            display: inline-flex;
+            align-items: center;
+            margin: 0.2rem 0.3rem;
+            border: 1px solid #bed0e3;
+        }
+        .settings-summary {
+            background: #e9eff7;
+            border-radius: 18px;
+            padding: 1rem 1.4rem;
+            margin: 1.2rem 0 0.5rem 0;
+            font-weight: 450;
+        }
+        .action-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin: 1.8rem 0 1.2rem 0;
+            align-items: center;
+        }
+        .roster-wrapper {
+            border: 1px solid #cfddee;
+            border-radius: 24px;
+            overflow: auto;
+            max-height: 600px;
+            background: white;
+            box-shadow: inset 0 2px 6px rgba(0,0,0,0.02);
+        }
+        table {
+            border-collapse: collapse;
+            min-width: 100%;
+            font-size: 0.9rem;
+            white-space: nowrap;
+        }
+        th {
+            background: #1e3a5f;
+            color: white;
+            font-weight: 500;
+            padding: 0.9rem 0.6rem;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        td {
+            padding: 0.6rem 0.4rem;
+            border-bottom: 1px solid #e2e8f0;
+            text-align: center;
+        }
+        tr:last-child td {
+            border-bottom: none;
+        }
+        .shift-A { background-color: #d0f0d0; font-weight: 500; }
+        .shift-B { background-color: #fff7cc; font-weight: 500; }
+        .shift-C { background-color: #fdd9d9; font-weight: 500; }
+        .shift-G { background-color: #d3e5ff; font-weight: 500; }
+        .shift-OFF { background-color: #ffc2c2; color: #a10000; font-weight: 600; }
+        .shift-12h { background-color: #ffe0b0; font-weight: 600; }
+
+        .shift-selector-panel {
+            background: #e9eff7;
+            border-radius: 18px;
+            padding: 1rem;
+            margin-top: 1rem;
+        }
+        .employee-shift-selector {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: white;
+            padding: 0.3rem 0.8rem;
+            border-radius: 30px;
+            border: 1px solid #ccd7e6;
+            margin-bottom: 0.5rem;
+        }
+        .footer-note {
+            margin-top: 1.5rem;
+            color: #4d627c;
+            font-size: 0.85rem;
+            display: flex;
+            justify-content: space-between;
+        }
+        .badge {
+            background: #1e3a5f;
+            color: white;
+            border-radius: 30px;
+            padding: 0.25rem 1rem;
+        }
+        .rotation-indicator {
+            background-color: #fff3cd;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        .c-rest-badge {
+            background-color: #dc3545;
+            color: white;
+            padding: 0.2rem 0.5rem;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            margin-left: 0.3rem;
+        }
+    </style>
+</head>
+<body>
+<div class="dashboard">
+    <h1>
+        ⚙️ 24/7 Industrial Roster
+        <small id="monthYearHeading">March 2026</small>
+        <span class="c-rest-badge">C → Next day ONLY B,C,OFF (No A/G)</span>
+    </h1>
+
+    <div class="grid-2">
+        <!-- left: month & rotation -->
+        <div class="card">
+            <h3>📅 Month & rotation</h3>
+            <div class="input-row">
+                <div class="input-group">
+                    <label>Month</label>
+                    <input type="month" id="monthPicker" value="2026-03">
+                </div>
+                <div class="input-group">
+                    <label>Rotation (days)</label>
+                    <input type="number" id="rotationDays" min="1" max="30" value="2">
+                </div>
+            </div>
+            <div class="settings-summary" id="summaryText">
+                ⚡ <span class="rotation-indicator" id="rotationDisplay">Rotation every 2 days</span>
+                <span class="c-rest-badge">Strict C Rest Rule</span>
+            </div>
+            
+            <!-- One-Time Shift Selection Panel -->
+            <div class="shift-selector-panel">
+                <h4 style="margin:0 0 0.5rem 0;">🎯 Initial Shift Selection</h4>
+                <p style="font-size:0.8rem; margin:0 0 0.5rem 0;">Select starting shift for each employee</p>
+                <div id="shiftSelectors" style="max-height:200px; overflow-y:auto; margin-bottom:0.5rem;">
+                    <!-- Dynamic shift selectors will appear here -->
+                </div>
+                <button id="applyShiftsBtn" style="width:100%;">Apply Selected Shifts</button>
+                <button id="resetShiftsBtn" class="secondary" style="width:100%; margin-top:0.5rem;">Reset to Auto</button>
+            </div>
+        </div>
+
+        <!-- right: employee management with remove -->
+        <div class="card">
+            <h3>👥 Employees & weekly off</h3>
+            <div class="input-row">
+                <div class="input-group" style="flex:2;">
+                    <label>Employee name</label>
+                    <input type="text" id="empName" placeholder="e.g. John Miller">
+                </div>
+                <div class="input-group" style="flex:1;">
+                    <label>Weekly off</label>
+                    <select id="empOffDay">
+                        <option value="Sun">Sunday</option><option value="Mon">Monday</option><option value="Tue">Tuesday</option>
+                        <option value="Wed">Wednesday</option><option value="Thu">Thursday</option><option value="Fri">Friday</option>
+                        <option value="Sat">Saturday</option>
+                    </select>
+                </div>
+                <button id="addEmpBtn" style="align-self:center;">➕ Add</button>
+            </div>
+            <div class="employee-list-area" id="employeeListContainer">
+                <span style="color:#8899bb;">No employees added yet.</span>
+            </div>
+            <p style="font-size:0.8rem; margin-top:0.6rem; color:#3e5a7a;">⬇️ Click ✖ to remove</p>
+        </div>
+    </div>
+
+    <div class="action-bar">
+        <button id="generateBtn">📊 Generate Roster</button>
+        <button class="secondary" id="jpgBtn">📸 Download JPG</button>
+        <button class="secondary" id="excelBtn">📥 Download Excel</button>
+        <span style="flex:1; text-align:right; font-size:0.85rem;" id="empCountDisplay">👤 0 employees</span>
+    </div>
+
+    <div class="roster-wrapper" id="rosterTableContainer">
+        <table id="rosterTable">
+            <thead><tr><th>Date</th><th>Day</th><th>Block</th><th>Prev C</th><th colspan="100%">Employees (A/B/C/G/OFF)</th></tr></thead>
+            <tbody id="rosterBody"><tr><td colspan="5" style="text-align:center; padding:3rem;">⬅ Configure & generate roster</td></tr></tbody>
+        </table>
+    </div>
+    <div class="footer-note">
+        <span>🟢 A=green  🟡 B=yellow  🔴 C=red  🔵 G=blue  ❌ OFF=red bg</span>
+        <span class="badge">✓ After C shift → Next day ONLY B, C, or OFF (NEVER A/G)</span>
+    </div>
+</div>
+
+<script>
+(function() {
+    // ---------- state ----------
+    let employees = [];
+    let employeeShifts = {};
+
+    const monthPicker = document.getElementById('monthPicker');
+    const rotationDays = document.getElementById('rotationDays');
+    const rotationDisplay = document.getElementById('rotationDisplay');
+    const empNameInp = document.getElementById('empName');
+    const empOffDay = document.getElementById('empOffDay');
+    const addEmpBtn = document.getElementById('addEmpBtn');
+    const empListDiv = document.getElementById('employeeListContainer');
+    const empCountSpan = document.getElementById('empCountDisplay');
+    const monthYearHeading = document.getElementById('monthYearHeading');
+    const generateBtn = document.getElementById('generateBtn');
+    const jpgBtn = document.getElementById('jpgBtn');
+    const excelBtn = document.getElementById('excelBtn');
+    const rosterTable = document.getElementById('rosterTable');
+    
+    const shiftSelectors = document.getElementById('shiftSelectors');
+    const applyShiftsBtn = document.getElementById('applyShiftsBtn');
+    const resetShiftsBtn = document.getElementById('resetShiftsBtn');
+
+    let currentRoster = [];
+
+    function updateRotationDisplay() {
+        const days = rotationDays.value;
+        rotationDisplay.textContent = `Rotation every ${days} day${days > 1 ? 's' : ''}`;
+    }
+    rotationDays.addEventListener('input', updateRotationDisplay);
+    updateRotationDisplay();
+
+    function updateMonthHeading() {
+        const parts = monthPicker.value.split('-');
+        if (parts.length === 2) {
+            const year = parts[0];
+            const monthIndex = parseInt(parts[1],10)-1;
+            const monthName = new Date(year, monthIndex, 1).toLocaleString('default', { month: 'long' });
+            monthYearHeading.innerText = monthName + ' ' + year;
+        }
+    }
+    monthPicker.addEventListener('change', updateMonthHeading);
+    updateMonthHeading();
+
+    function renderShiftSelectors() {
+        if (employees.length === 0) {
+            shiftSelectors.innerHTML = '<p style="color:#8899bb; text-align:center;">Add employees first</p>';
+            return;
+        }
+        
+        let html = '';
+        employees.forEach(emp => {
+            const currentShift = employeeShifts[emp.id] || 'A';
+            html += `
+                <div class="employee-shift-selector">
+                    <span style="min-width:120px;">${emp.name}:</span>
+                    <select id="shift-${emp.id}" style="padding:0.3rem; border-radius:16px; flex:1;">
+                        <option value="A" ${currentShift === 'A' ? 'selected' : ''}>A Shift</option>
+                        <option value="B" ${currentShift === 'B' ? 'selected' : ''}>B Shift</option>
+                        <option value="C" ${currentShift === 'C' ? 'selected' : ''}>C Shift</option>
+                        <option value="G" ${currentShift === 'G' ? 'selected' : ''}>G Shift</option>
+                    </select>
+                </div>
+            `;
+        });
+        shiftSelectors.innerHTML = html;
+    }
+
+    function renderEmployeeList() {
+        if (employees.length === 0) {
+            empListDiv.innerHTML = '<span style="color:#8899bb;">No employees added yet.</span>';
+            empCountSpan.innerText = '👤 0 employees';
+            employeeShifts = {};
+        } else {
+            let html = '';
+            employees.forEach(emp => {
+                html += `<span class="employee-tag" title="Off: ${emp.weeklyOff}">
+                    👤 ${emp.name} (${emp.weeklyOff})
+                    <button class="small-remove" data-id="${emp.id}" style="cursor:pointer;">✖</button>
+                </span>`;
+            });
+            empListDiv.innerHTML = html;
+            empCountSpan.innerText = `👤 ${employees.length} employees`;
+
+            employees.forEach(emp => {
+                if (!employeeShifts[emp.id]) {
+                    employeeShifts[emp.id] = 'A';
+                }
+            });
+
+            document.querySelectorAll('.small-remove').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const id = Number(btn.dataset.id);
+                    employees = employees.filter(emp => emp.id !== id);
+                    delete employeeShifts[id];
+                    renderEmployeeList();
+                    renderShiftSelectors();
+                    currentRoster = [];
+                    rosterTable.innerHTML = '<thead><tr><th>Date</th><th>Day</th><th>Block</th><th>Prev C</th><th colspan="100%">Employees (A/B/C/G/OFF)</th></tr></thead><tbody><tr><td colspan="5" style="text-align:center; padding:3rem;">⬅ Configure & generate roster</td></tr></tbody>';
+                });
+            });
+        }
+        renderShiftSelectors();
+    }
+
+    addEmpBtn.addEventListener('click', () => {
+        const name = empNameInp.value.trim();
+        if (!name) { alert('Enter employee name'); return; }
+        const off = empOffDay.value;
+        const newId = Date.now() + Math.random();
+        employees.push({ id: newId, name, weeklyOff: off });
+        employeeShifts[newId] = 'A';
+        empNameInp.value = '';
+        renderEmployeeList();
+    });
+
+    applyShiftsBtn.addEventListener('click', () => {
+        employees.forEach(emp => {
+            const select = document.getElementById(`shift-${emp.id}`);
+            if (select) {
+                employeeShifts[emp.id] = select.value;
+            }
+        });
+        alert('Initial shifts saved!');
+        if (currentRoster.length > 0) {
+            generateRoster();
+        }
+    });
+
+    resetShiftsBtn.addEventListener('click', () => {
+        const empList = [...employees];
+        const shifts = ['A', 'B', 'C', 'G'];
+        
+        empList.forEach((emp, index) => {
+            employeeShifts[emp.id] = shifts[index % 4];
+        });
+        
+        renderShiftSelectors();
+        alert('Shifts reset to auto distribution');
+        if (currentRoster.length > 0) {
+            generateRoster();
+        }
+    });
+
+    // ---------- STRICT C REST RULE ENFORCEMENT ----------
+    function generateRoster() {
+        if (employees.length < 2) {
+            alert('Need at least 2 employees to generate roster');
+            return;
+        }
+
+        const [year, month] = monthPicker.value.split('-').map(Number);
+        const daysInMonth = new Date(year, month, 0).getDate();
+        const rotationPeriod = parseInt(rotationDays.value, 10) || 2;
+
+        const empIds = employees.map(e => e.id);
+        const dayNames = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+        
+        const dateProps = [];
+        for (let d = 1; d <= daysInMonth; d++) {
+            const dateObj = new Date(year, month-1, d);
+            const dayStr = dayNames[dateObj.getDay()];
+            dateProps.push({ date: d, day: dayStr, fullDate: `${year}-${String(month).padStart(2,'0')}-${String(d).padStart(2,'0')}` });
+        }
+
+        // OFF assignment
+        let offCount = {};
+        empIds.forEach(id => offCount[id] = 0);
+        
+        const weeklyOffUsed = {};
+        empIds.forEach(id => weeklyOffUsed[id] = new Set());
+
+        const finalOffSchedule = {};
+
+        for (let d = 1; d <= daysInMonth; d++) {
+            const dayName = dateProps[d-1].day;
+            const weekIdx = Math.floor((d-1) / 7);
+
+            const offToday = [];
+            for (let emp of employees) {
+                const id = emp.id;
+                if (emp.weeklyOff === dayName && offCount[id] < 4 && !weeklyOffUsed[id].has(weekIdx)) {
+                    offToday.push(id);
+                    weeklyOffUsed[id].add(weekIdx);
+                    offCount[id]++;
+                }
+            }
+            finalOffSchedule[d] = new Set(offToday);
+        }
+
+        let prevShift = {};
+        const rosterDays = [];
+
+        for (let day = 1; day <= daysInMonth; day++) {
+            const { date, day: dayName, fullDate } = dateProps[day-1];
+            
+            const offToday = finalOffSchedule[day] || new Set();
+            let availableIds = empIds.filter(id => !offToday.has(id));
+            
+            // Track who had C yesterday (these people CANNOT get A or G today)
+            const hadCYesterday = [];
+            for (let id of availableIds) {
+                if (prevShift[id] === 'C') {
+                    hadCYesterday.push(id);
+                }
+            }
+            
+            // Calculate rotation block
+            const blockIndex = Math.floor((day - 1) / rotationPeriod);
+            
+            // Create shift pool based on available count
+            let shiftPool = [];
+            if (availableIds.length === 4) {
+                shiftPool = ['A', 'B', 'C', 'G'];
+            } else if (availableIds.length === 3) {
+                shiftPool = ['A', 'B', 'C'];
+            } else if (availableIds.length === 2) {
+                shiftPool = ['A', 'B'];
+            } else if (availableIds.length === 1) {
+                shiftPool = ['A'];
+            }
+            
+            // Create assignments ensuring C rest rule
+            const assignments = {};
+            const unassigned = [...availableIds];
+            
+            // First, handle people who had C yesterday - they can ONLY get B or C (or OFF if available)
+            for (let id of hadCYesterday) {
+                // These people can only get B or C
+                const allowedShifts = ['B', 'C'];
+                // Pick a shift from allowed based on rotation
+                const shiftIndex = blockIndex % allowedShifts.length;
+                const shift = allowedShifts[shiftIndex];
+                
+                assignments[id] = shift;
+                
+                // Remove this shift from pool
+                const poolIndex = shiftPool.indexOf(shift);
+                if (poolIndex !== -1) {
+                    shiftPool.splice(poolIndex, 1);
+                }
+                
+                // Remove from unassigned
+                const unassignedIndex = unassigned.indexOf(id);
+                if (unassignedIndex !== -1) {
+                    unassigned.splice(unassignedIndex, 1);
+                }
+            }
+            
+            // Now assign remaining people from shift pool
+            // Sort unassigned to ensure consistent assignment
+            unassigned.sort((a, b) => a - b);
+            
+            for (let i = 0; i < unassigned.length; i++) {
+                const id = unassigned[i];
+                // Rotate through remaining shifts
+                const shiftIndex = (blockIndex + i) % shiftPool.length;
+                const shift = shiftPool[shiftIndex];
+                
+                assignments[id] = shift;
+            }
+            
+            // FINAL SAFETY CHECK - Absolutely no C -> A/G violations
+            for (let id of hadCYesterday) {
+                if (assignments[id] === 'A' || assignments[id] === 'G') {
+                    // Force fix - change to B
+                    console.error(`CRITICAL: Forcing fix for employee ${id} - had C yesterday, got ${assignments[id]} today`);
+                    assignments[id] = 'B';
+                }
+            }
+            
+            // Build full assignments
+            const fullAssignments = {};
+            for (let id of empIds) {
+                if (offToday.has(id)) {
+                    fullAssignments[id] = 'OFF';
+                    prevShift[id] = 'OFF';
+                } else {
+                    fullAssignments[id] = assignments[id];
+                    prevShift[id] = assignments[id];
+                }
+            }
+            
+            // Count shifts for display
+            const shiftCounts = {A:0, B:0, C:0, G:0, OFF:0};
+            for (let id of empIds) {
+                shiftCounts[fullAssignments[id]]++;
+            }
+            
+            const rotationBlockNum = Math.floor((day - 1) / rotationPeriod) + 1;
+            
+            // Create prev C display
+            const prevCDisplay = hadCYesterday.length > 0 ? hadCYesterday.map(id => {
+                const emp = employees.find(e => e.id === id);
+                return emp ? emp.name.substring(0,3) : '';
+            }).join(',') : 'None';
+            
+            rosterDays.push({
+                date: fullDate,
+                day: dayName,
+                rotationBlock: rotationBlockNum,
+                prevC: prevCDisplay,
+                assignments: fullAssignments,
+                availableCount: availableIds.length,
+                hadCYesterday: hadCYesterday
+            });
+        }
+
+        currentRoster = rosterDays;
+        renderRosterTable();
+    }
+
+    function renderRosterTable() {
+        if (!currentRoster.length) return;
+        const empList = employees;
+        const empIds = empList.map(e => e.id);
+
+        let thead = `<tr><th>Date</th><th>Day</th><th>Block</th><th>Prev C</th>`;
+        empList.forEach(e => thead += `<th>${e.name}<br><small>Start:${employeeShifts[e.id] || 'A'}</small></th>`);
+        thead += `</tr>`;
+
+        let tbody = '';
+        let prevBlock = 0;
+        
+        for (let day of currentRoster) {
+            if (day.rotationBlock !== prevBlock && prevBlock !== 0) {
+                tbody += `<tr style="border-top: 3px solid #1e3a5f;"><td colspan="${3 + empList.length}" style="background: #e9eff7; font-weight: bold; text-align: center;">🔁 Rotation Block ${day.rotationBlock} Starts</td></tr>`;
+            }
+            
+            let row = `<tr>`;
+            row += `<td>${day.date}</td>`;
+            row += `<td>${day.day}</td>`;
+            row += `<td style="background: #e9eff7; font-weight: bold;">B${day.rotationBlock}</td>`;
+            row += `<td>${day.prevC}</td>`;
+            
+            for (let id of empIds) {
+                const shift = day.assignments[id] || '?';
+                let cssClass = '';
+                if (shift === 'OFF') cssClass = 'shift-OFF';
+                else if (shift === 'A') cssClass = 'shift-A';
+                else if (shift === 'B') cssClass = 'shift-B';
+                else if (shift === 'C') cssClass = 'shift-C';
+                else if (shift === 'G') cssClass = 'shift-G';
+                
+                // Highlight if this person had C yesterday (to verify they didn't get A/G)
+                if (day.hadCYesterday && day.hadCYesterday.includes(id)) {
+                    if (shift === 'A' || shift === 'G') {
+                        // This should NEVER happen - mark as error
+                        cssClass += ' rest-violation';
+                        console.error(`VIOLATION: ${employees.find(e => e.id === id)?.name} had C yesterday but got ${shift} today`);
+                    }
+                }
+                
+                row += `<td class="${cssClass}">${shift}</td>`;
+            }
+            
+            row += `</tr>`;
+            tbody += row;
+            
+            prevBlock = day.rotationBlock;
+        }
+
+        rosterTable.innerHTML = `<thead>${thead}</thead><tbody>${tbody}</tbody>`;
+    }
+
+    generateBtn.addEventListener('click', () => {
+        generateRoster();
+    });
+
+    jpgBtn.addEventListener('click', function() {
+        if (!currentRoster.length) { alert('Generate roster first'); return; }
+        const container = document.getElementById('rosterTableContainer');
+        html2canvas(container, { scale: 1.5, backgroundColor: '#ffffff' }).then(canvas => {
+            const link = document.createElement('a');
+            link.download = `roster_${monthPicker.value}.jpg`;
+            link.href = canvas.toDataURL('image/jpeg', 0.95);
+            link.click();
+        }).catch(() => alert('JPG export failed'));
+    });
+
+    excelBtn.addEventListener('click', function() {
+        if (!currentRoster.length || !employees.length) { alert('Generate roster first'); return; }
+
+        const empNames = employees.map(e => `${e.name} (Start:${employeeShifts[e.id] || 'A'})`);
+        const data = [['Date', 'Day', 'Rotation Block', 'Previous C', ...empNames]];
+        for (let day of currentRoster) {
+            const row = [day.date, day.day, `Block ${day.rotationBlock}`, day.prevC];
+            employees.forEach(e => {
+                row.push(day.assignments[e.id] || '?');
+            });
+            data.push(row);
+        }
+
+        const wb = XLSX.utils.book_new();
+        const ws = XLSX.utils.aoa_to_sheet(data);
+        XLSX.utils.book_append_sheet(wb, ws, 'Roster');
+        XLSX.writeFile(wb, `roster_${monthPicker.value}.xlsx`);
+    });
+
+    // Add demo employees
+    setTimeout(() => {
+        if (employees.length === 0) {
+            employees.push({ id: 101, name: 'Alex Smith', weeklyOff: 'Sun' });
+            employees.push({ id: 102, name: 'Blake Lee', weeklyOff: 'Mon' });
+            employees.push({ id: 103, name: 'Casey Kim', weeklyOff: 'Tue' });
+            employees.push({ id: 104, name: 'Jordan Fox', weeklyOff: 'Wed' });
+            
+            employeeShifts = {
+                101: 'A',
+                102: 'B', 
+                103: 'C',
+                104: 'G'
+            };
+            
+            renderEmployeeList();
+            
+            setTimeout(() => {
+                generateRoster();
+            }, 200);
+        }
+    }, 100);
+})();
+</script>
+</body>
+</html>
