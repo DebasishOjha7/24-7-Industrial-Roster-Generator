@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>24/7 Industrial Roster · Strict C Rest Rule</title>
+    <title>24/7 Industrial Roster · Editable Shifts</title>
     <!-- xlsx library for Excel export -->
     <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
     <!-- html2canvas for JPG screenshot -->
@@ -38,6 +38,7 @@
             display: flex;
             align-items: center;
             gap: 8px;
+            flex-wrap: wrap;
         }
         h1 small {
             font-size: 1rem;
@@ -133,6 +134,7 @@
             border-radius: 30px;
             font-weight: 600;
             border: 1px solid #e0c9c9;
+            cursor: pointer;
         }
         button.small-remove:hover {
             background: #f5d5d5;
@@ -182,7 +184,7 @@
             border: 1px solid #cfddee;
             border-radius: 24px;
             overflow: auto;
-            max-height: 600px;
+            max-height: 500px;
             background: white;
             box-shadow: inset 0 2px 6px rgba(0,0,0,0.02);
         }
@@ -205,16 +207,32 @@
             padding: 0.6rem 0.4rem;
             border-bottom: 1px solid #e2e8f0;
             text-align: center;
+            cursor: pointer;
+            transition: 0.2s;
         }
-        tr:last-child td {
-            border-bottom: none;
+        td:hover {
+            opacity: 0.8;
+            transform: scale(1.05);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
         .shift-A { background-color: #d0f0d0; font-weight: 500; }
         .shift-B { background-color: #fff7cc; font-weight: 500; }
         .shift-C { background-color: #fdd9d9; font-weight: 500; }
         .shift-G { background-color: #d3e5ff; font-weight: 500; }
         .shift-OFF { background-color: #ffc2c2; color: #a10000; font-weight: 600; }
-        .shift-12h { background-color: #ffe0b0; font-weight: 600; }
+        .shift-cover { 
+            background-color: #d4edda; 
+            font-weight: 600; 
+            position: relative;
+            border: 2px solid #28a745;
+        }
+        .shift-cover::after {
+            content: "🔄";
+            font-size: 0.7rem;
+            position: absolute;
+            top: 2px;
+            right: 2px;
+        }
 
         .shift-selector-panel {
             background: #e9eff7;
@@ -232,6 +250,111 @@
             border: 1px solid #ccd7e6;
             margin-bottom: 0.5rem;
         }
+        
+        /* Edit Modal Styles */
+        .edit-modal {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 2rem;
+            border-radius: 24px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            z-index: 1000;
+            min-width: 300px;
+            border: 2px solid #1e3a5f;
+        }
+        .edit-modal h3 {
+            margin-top: 0;
+            color: #1e3a5f;
+        }
+        .edit-modal select {
+            width: 100%;
+            padding: 0.7rem;
+            margin: 1rem 0;
+            border-radius: 16px;
+            border: 1px solid #ccd7e6;
+            font-size: 1rem;
+        }
+        .edit-buttons {
+            display: flex;
+            gap: 1rem;
+        }
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 999;
+        }
+        .edit-badge {
+            background: #28a745;
+            color: white;
+            padding: 0.2rem 0.5rem;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            margin-left: 0.5rem;
+        }
+        
+        /* Summary Table Styles */
+        .summary-section {
+            margin-top: 2rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 24px;
+            padding: 1.5rem;
+            color: white;
+        }
+        .summary-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1rem;
+        }
+        .summary-card {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 1rem;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        .summary-employee {
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+            padding-bottom: 0.3rem;
+            border-bottom: 2px solid rgba(255,255,255,0.3);
+            display: flex;
+            justify-content: space-between;
+        }
+        .summary-stats {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+        .stat-item {
+            flex: 1;
+            min-width: 45px;
+            text-align: center;
+            padding: 0.3rem;
+            border-radius: 8px;
+            background: rgba(255,255,255,0.15);
+            font-size: 0.9rem;
+        }
+        .rest-badge {
+            background: #dc3545;
+            color: white;
+            padding: 0.2rem 0.5rem;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            margin-left: 0.5rem;
+        }
         .footer-note {
             margin-top: 1.5rem;
             color: #4d627c;
@@ -245,20 +368,6 @@
             border-radius: 30px;
             padding: 0.25rem 1rem;
         }
-        .rotation-indicator {
-            background-color: #fff3cd;
-            padding: 0.25rem 0.5rem;
-            border-radius: 4px;
-            font-weight: bold;
-        }
-        .c-rest-badge {
-            background-color: #dc3545;
-            color: white;
-            padding: 0.2rem 0.5rem;
-            border-radius: 12px;
-            font-size: 0.7rem;
-            margin-left: 0.3rem;
-        }
     </style>
 </head>
 <body>
@@ -266,7 +375,8 @@
     <h1>
         ⚙️ 24/7 Industrial Roster
         <small id="monthYearHeading">March 2026</small>
-        <span class="c-rest-badge">C → Next day ONLY B,C,OFF (No A/G)</span>
+        <span class="rest-badge">C → Next day B,C,OFF</span>
+        <span class="edit-badge">Click any shift to edit</span>
     </h1>
 
     <div class="grid-2">
@@ -283,26 +393,15 @@
                     <input type="number" id="rotationDays" min="1" max="30" value="2">
                 </div>
             </div>
-            <div class="settings-summary" id="summaryText">
-                ⚡ <span class="rotation-indicator" id="rotationDisplay">Rotation every 2 days</span>
-                <span class="c-rest-badge">Strict C Rest Rule</span>
-            </div>
-            
-            <!-- One-Time Shift Selection Panel -->
-            <div class="shift-selector-panel">
-                <h4 style="margin:0 0 0.5rem 0;">🎯 Initial Shift Selection</h4>
-                <p style="font-size:0.8rem; margin:0 0 0.5rem 0;">Select starting shift for each employee</p>
-                <div id="shiftSelectors" style="max-height:200px; overflow-y:auto; margin-bottom:0.5rem;">
-                    <!-- Dynamic shift selectors will appear here -->
-                </div>
-                <button id="applyShiftsBtn" style="width:100%;">Apply Selected Shifts</button>
-                <button id="resetShiftsBtn" class="secondary" style="width:100%; margin-top:0.5rem;">Reset to Auto</button>
+            <div class="settings-summary">
+                ⚡ <span id="rotationDisplay">Rotation every 2 days</span><br>
+                <small>Click any shift in table to edit manually</small>
             </div>
         </div>
 
-        <!-- right: employee management with remove -->
+        <!-- right: employee management -->
         <div class="card">
-            <h3>👥 Employees & weekly off</h3>
+            <h3>👥 Employee Management</h3>
             <div class="input-row">
                 <div class="input-group" style="flex:2;">
                     <label>Employee name</label>
@@ -311,36 +410,97 @@
                 <div class="input-group" style="flex:1;">
                     <label>Weekly off</label>
                     <select id="empOffDay">
-                        <option value="Sun">Sunday</option><option value="Mon">Monday</option><option value="Tue">Tuesday</option>
-                        <option value="Wed">Wednesday</option><option value="Thu">Thursday</option><option value="Fri">Friday</option>
+                        <option value="Sun">Sunday</option>
+                        <option value="Mon">Monday</option>
+                        <option value="Tue">Tuesday</option>
+                        <option value="Wed">Wednesday</option>
+                        <option value="Thu">Thursday</option>
+                        <option value="Fri">Friday</option>
                         <option value="Sat">Saturday</option>
                     </select>
                 </div>
-                <button id="addEmpBtn" style="align-self:center;">➕ Add</button>
+                <button id="addEmpBtn">➕ Add</button>
             </div>
             <div class="employee-list-area" id="employeeListContainer">
-                <span style="color:#8899bb;">No employees added yet.</span>
+                <span style="color:#8899bb;">Add employees and select their starting shifts</span>
             </div>
-            <p style="font-size:0.8rem; margin-top:0.6rem; color:#3e5a7a;">⬇️ Click ✖ to remove</p>
+            
+            <!-- Shift Selection Panel -->
+            <div class="shift-selector-panel">
+                <h4 style="margin:0 0 0.5rem 0;">🎯 Select Starting Shifts</h4>
+                <div id="shiftSelectors"></div>
+                <button id="applyShiftsBtn" style="width:100%; margin-top:0.5rem;">Apply Selected Shifts</button>
+                <button id="resetShiftsBtn" class="secondary" style="width:100%; margin-top:0.5rem;">Reset to A,B,C,G</button>
+            </div>
         </div>
     </div>
 
     <div class="action-bar">
         <button id="generateBtn">📊 Generate Roster</button>
+        <button class="secondary" id="updateSummaryBtn">🔄 Update Summary</button>
         <button class="secondary" id="jpgBtn">📸 Download JPG</button>
         <button class="secondary" id="excelBtn">📥 Download Excel</button>
-        <span style="flex:1; text-align:right; font-size:0.85rem;" id="empCountDisplay">👤 0 employees</span>
+        <span style="flex:1; text-align:right;" id="empCountDisplay">👤 0 employees</span>
     </div>
 
+    <!-- Roster Table -->
     <div class="roster-wrapper" id="rosterTableContainer">
         <table id="rosterTable">
-            <thead><tr><th>Date</th><th>Day</th><th>Block</th><th>Prev C</th><th colspan="100%">Employees (A/B/C/G/OFF)</th></tr></thead>
-            <tbody id="rosterBody"><tr><td colspan="5" style="text-align:center; padding:3rem;">⬅ Configure & generate roster</td></tr></tbody>
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Day</th>
+                    <th>Cycle</th>
+                    <th colspan="100%">Employees (Click to edit)</th>
+                </tr>
+            </thead>
+            <tbody id="rosterBody">
+                <tr>
+                    <td colspan="4" style="text-align:center; padding:3rem;">
+                        Add employees, select their starting shifts, and click "Generate Roster"
+                    </td>
+                </tr>
+            </tbody>
         </table>
     </div>
+    
+    <!-- Edit Modal -->
+    <div id="editOverlay" class="overlay" style="display: none;"></div>
+    <div id="editModal" class="edit-modal" style="display: none;">
+        <h3 id="editTitle">Edit Shift</h3>
+        <p id="editInfo"></p>
+        <select id="editShiftSelect">
+            <option value="A">A Shift</option>
+            <option value="B">B Shift</option>
+            <option value="C">C Shift</option>
+            <option value="G">G Shift</option>
+            <option value="OFF">OFF Day</option>
+        </select>
+        <div class="edit-buttons">
+            <button id="saveEditBtn" style="flex:1;">Save</button>
+            <button id="cancelEditBtn" class="secondary" style="flex:1;">Cancel</button>
+        </div>
+    </div>
+    
+    <!-- Summary Section -->
+    <div id="summarySection" style="margin-top: 2rem; display: none;">
+        <div class="summary-section">
+            <div class="summary-title">📊 Monthly Shift Summary</div>
+            <div class="summary-grid" id="summaryGrid"></div>
+            <div style="margin-top:1rem; text-align:center; font-size:0.9rem;" id="restSummary">
+                ✅ C Rest Rule: No violations
+            </div>
+        </div>
+    </div>
+    
+    <!-- JPG Status -->
+    <div id="jpgStatus" style="text-align:center; margin-top:0.5rem; color:#28a745; display:none;">
+        ✅ Full month roster captured! Downloading...
+    </div>
+    
     <div class="footer-note">
-        <span>🟢 A=green  🟡 B=yellow  🔴 C=red  🔵 G=blue  ❌ OFF=red bg</span>
-        <span class="badge">✓ After C shift → Next day ONLY B, C, or OFF (NEVER A/G)</span>
+        <span>🟢 A=green  🟡 B=yellow  🔴 C=red  🔵 G=blue  ❌ OFF=red</span>
+        <span class="badge">✓ Click any shift to edit | Update Summary to refresh counts</span>
     </div>
 </div>
 
@@ -348,8 +508,18 @@
 (function() {
     // ---------- state ----------
     let employees = [];
-    let employeeShifts = {};
+    let employeeShifts = {}; // User-selected starting shifts
+    let shiftCounts = {}; // For summary
+    let restViolations = []; // Track C rest rule violations
+    let currentRoster = [];
 
+    // Edit state
+    let editRowIndex = null;
+    let editColIndex = null;
+    let editEmployeeId = null;
+    let editDate = null;
+
+    // DOM elements
     const monthPicker = document.getElementById('monthPicker');
     const rotationDays = document.getElementById('rotationDays');
     const rotationDisplay = document.getElementById('rotationDisplay');
@@ -360,19 +530,31 @@
     const empCountSpan = document.getElementById('empCountDisplay');
     const monthYearHeading = document.getElementById('monthYearHeading');
     const generateBtn = document.getElementById('generateBtn');
+    const updateSummaryBtn = document.getElementById('updateSummaryBtn');
     const jpgBtn = document.getElementById('jpgBtn');
     const excelBtn = document.getElementById('excelBtn');
     const rosterTable = document.getElementById('rosterTable');
-    
+    const rosterBody = document.getElementById('rosterBody');
+    const rosterContainer = document.getElementById('rosterTableContainer');
     const shiftSelectors = document.getElementById('shiftSelectors');
     const applyShiftsBtn = document.getElementById('applyShiftsBtn');
     const resetShiftsBtn = document.getElementById('resetShiftsBtn');
-
-    let currentRoster = [];
+    const summarySection = document.getElementById('summarySection');
+    const summaryGrid = document.getElementById('summaryGrid');
+    const restSummary = document.getElementById('restSummary');
+    const jpgStatus = document.getElementById('jpgStatus');
+    
+    // Edit modal elements
+    const editOverlay = document.getElementById('editOverlay');
+    const editModal = document.getElementById('editModal');
+    const editTitle = document.getElementById('editTitle');
+    const editInfo = document.getElementById('editInfo');
+    const editShiftSelect = document.getElementById('editShiftSelect');
+    const saveEditBtn = document.getElementById('saveEditBtn');
+    const cancelEditBtn = document.getElementById('cancelEditBtn');
 
     function updateRotationDisplay() {
-        const days = rotationDays.value;
-        rotationDisplay.textContent = `Rotation every ${days} day${days > 1 ? 's' : ''}`;
+        rotationDisplay.textContent = `Rotation every ${rotationDays.value} days`;
     }
     rotationDays.addEventListener('input', updateRotationDisplay);
     updateRotationDisplay();
@@ -389,6 +571,7 @@
     monthPicker.addEventListener('change', updateMonthHeading);
     updateMonthHeading();
 
+    // Render shift selectors
     function renderShiftSelectors() {
         if (employees.length === 0) {
             shiftSelectors.innerHTML = '<p style="color:#8899bb; text-align:center;">Add employees first</p>';
@@ -413,6 +596,7 @@
         shiftSelectors.innerHTML = html;
     }
 
+    // Render employee list
     function renderEmployeeList() {
         if (employees.length === 0) {
             empListDiv.innerHTML = '<span style="color:#8899bb;">No employees added yet.</span>';
@@ -421,323 +605,398 @@
         } else {
             let html = '';
             employees.forEach(emp => {
-                html += `<span class="employee-tag" title="Off: ${emp.weeklyOff}">
-                    👤 ${emp.name} (${emp.weeklyOff})
-                    <button class="small-remove" data-id="${emp.id}" style="cursor:pointer;">✖</button>
+                html += `<span class="employee-tag">
+                    👤 ${emp.name} (Off: ${emp.weeklyOff})
+                    <button class="small-remove" data-id="${emp.id}">✖</button>
                 </span>`;
             });
             empListDiv.innerHTML = html;
             empCountSpan.innerText = `👤 ${employees.length} employees`;
 
+            // Initialize shifts for new employees
             employees.forEach(emp => {
                 if (!employeeShifts[emp.id]) {
                     employeeShifts[emp.id] = 'A';
                 }
             });
 
+            // Add remove event listeners
             document.querySelectorAll('.small-remove').forEach(btn => {
-                btn.addEventListener('click', (e) => {
+                btn.addEventListener('click', function(e) {
                     e.stopPropagation();
-                    const id = Number(btn.dataset.id);
+                    const id = Number(this.dataset.id);
                     employees = employees.filter(emp => emp.id !== id);
                     delete employeeShifts[id];
                     renderEmployeeList();
                     renderShiftSelectors();
                     currentRoster = [];
-                    rosterTable.innerHTML = '<thead><tr><th>Date</th><th>Day</th><th>Block</th><th>Prev C</th><th colspan="100%">Employees (A/B/C/G/OFF)</th></tr></thead><tbody><tr><td colspan="5" style="text-align:center; padding:3rem;">⬅ Configure & generate roster</td></tr></tbody>';
+                    rosterBody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:3rem;">Employees updated. Select shifts and generate roster.</td></tr>';
+                    summarySection.style.display = 'none';
                 });
             });
         }
         renderShiftSelectors();
     }
 
-    addEmpBtn.addEventListener('click', () => {
+    // Add employee
+    addEmpBtn.addEventListener('click', function() {
         const name = empNameInp.value.trim();
         if (!name) { alert('Enter employee name'); return; }
-        const off = empOffDay.value;
+        
         const newId = Date.now() + Math.random();
-        employees.push({ id: newId, name, weeklyOff: off });
+        employees.push({ 
+            id: newId, 
+            name: name, 
+            weeklyOff: empOffDay.value 
+        });
+        
         employeeShifts[newId] = 'A';
+        
         empNameInp.value = '';
         renderEmployeeList();
     });
 
-    applyShiftsBtn.addEventListener('click', () => {
+    // Apply selected shifts
+    applyShiftsBtn.addEventListener('click', function() {
         employees.forEach(emp => {
             const select = document.getElementById(`shift-${emp.id}`);
             if (select) {
                 employeeShifts[emp.id] = select.value;
             }
         });
-        alert('Initial shifts saved!');
+        alert('Starting shifts saved!');
         if (currentRoster.length > 0) {
             generateRoster();
         }
     });
 
-    resetShiftsBtn.addEventListener('click', () => {
-        const empList = [...employees];
-        const shifts = ['A', 'B', 'C', 'G'];
-        
-        empList.forEach((emp, index) => {
-            employeeShifts[emp.id] = shifts[index % 4];
+    // Reset to A,B,C,G pattern
+    resetShiftsBtn.addEventListener('click', function() {
+        const pattern = ['A', 'B', 'C', 'G'];
+        employees.forEach((emp, index) => {
+            employeeShifts[emp.id] = pattern[index % 4];
         });
-        
         renderShiftSelectors();
-        alert('Shifts reset to auto distribution');
+        alert('Shifts reset to A,B,C,G pattern');
         if (currentRoster.length > 0) {
             generateRoster();
         }
     });
 
-    // ---------- STRICT C REST RULE ENFORCEMENT ----------
+    // Generate roster
     function generateRoster() {
-        if (employees.length < 2) {
-            alert('Need at least 2 employees to generate roster');
+        if (employees.length === 0) {
+            alert('Add employees first');
             return;
         }
 
         const [year, month] = monthPicker.value.split('-').map(Number);
         const daysInMonth = new Date(year, month, 0).getDate();
-        const rotationPeriod = parseInt(rotationDays.value, 10) || 2;
+        const rotationCycle = parseInt(rotationDays.value, 10);
 
-        const empIds = employees.map(e => e.id);
-        const dayNames = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+        const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+        const shiftSequence = ['A', 'B', 'C', 'G'];
         
-        const dateProps = [];
-        for (let d = 1; d <= daysInMonth; d++) {
-            const dateObj = new Date(year, month-1, d);
-            const dayStr = dayNames[dateObj.getDay()];
-            dateProps.push({ date: d, day: dayStr, fullDate: `${year}-${String(month).padStart(2,'0')}-${String(d).padStart(2,'0')}` });
-        }
-
-        // OFF assignment
-        let offCount = {};
-        empIds.forEach(id => offCount[id] = 0);
+        // Initialize shift counts
+        shiftCounts = {};
+        employees.forEach(emp => {
+            shiftCounts[emp.id] = { A: 0, B: 0, C: 0, G: 0, OFF: 0 };
+        });
         
-        const weeklyOffUsed = {};
-        empIds.forEach(id => weeklyOffUsed[id] = new Set());
+        // Track last shift for C rest rule
+        let lastShift = {};
+        restViolations = [];
+        
+        const roster = [];
 
-        const finalOffSchedule = {};
-
+        // Generate each day
         for (let d = 1; d <= daysInMonth; d++) {
-            const dayName = dateProps[d-1].day;
-            const weekIdx = Math.floor((d-1) / 7);
-
-            const offToday = [];
-            for (let emp of employees) {
-                const id = emp.id;
-                if (emp.weeklyOff === dayName && offCount[id] < 4 && !weeklyOffUsed[id].has(weekIdx)) {
-                    offToday.push(id);
-                    weeklyOffUsed[id].add(weekIdx);
-                    offCount[id]++;
-                }
-            }
-            finalOffSchedule[d] = new Set(offToday);
-        }
-
-        let prevShift = {};
-        const rosterDays = [];
-
-        for (let day = 1; day <= daysInMonth; day++) {
-            const { date, day: dayName, fullDate } = dateProps[day-1];
+            const date = new Date(year, month-1, d);
+            const dayName = dayNames[date.getDay()];
+            const dateStr = `${year}-${String(month).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
             
-            const offToday = finalOffSchedule[day] || new Set();
-            let availableIds = empIds.filter(id => !offToday.has(id));
+            // Calculate rotation step
+            const rotationStep = Math.floor((d - 1) / rotationCycle);
             
-            // Track who had C yesterday (these people CANNOT get A or G today)
-            const hadCYesterday = [];
-            for (let id of availableIds) {
-                if (prevShift[id] === 'C') {
-                    hadCYesterday.push(id);
-                }
-            }
+            // Determine who is off today
+            const offToday = employees.filter(emp => emp.weeklyOff === dayName).map(emp => emp.id);
             
-            // Calculate rotation block
-            const blockIndex = Math.floor((day - 1) / rotationPeriod);
-            
-            // Create shift pool based on available count
-            let shiftPool = [];
-            if (availableIds.length === 4) {
-                shiftPool = ['A', 'B', 'C', 'G'];
-            } else if (availableIds.length === 3) {
-                shiftPool = ['A', 'B', 'C'];
-            } else if (availableIds.length === 2) {
-                shiftPool = ['A', 'B'];
-            } else if (availableIds.length === 1) {
-                shiftPool = ['A'];
-            }
-            
-            // Create assignments ensuring C rest rule
+            // Create assignments
             const assignments = {};
-            const unassigned = [...availableIds];
             
-            // First, handle people who had C yesterday - they can ONLY get B or C (or OFF if available)
-            for (let id of hadCYesterday) {
-                // These people can only get B or C
-                const allowedShifts = ['B', 'C'];
-                // Pick a shift from allowed based on rotation
-                const shiftIndex = blockIndex % allowedShifts.length;
-                const shift = allowedShifts[shiftIndex];
+            // Assign shifts based on rotation
+            employees.forEach(emp => {
+                const id = emp.id;
                 
-                assignments[id] = shift;
-                
-                // Remove this shift from pool
-                const poolIndex = shiftPool.indexOf(shift);
-                if (poolIndex !== -1) {
-                    shiftPool.splice(poolIndex, 1);
-                }
-                
-                // Remove from unassigned
-                const unassignedIndex = unassigned.indexOf(id);
-                if (unassignedIndex !== -1) {
-                    unassigned.splice(unassignedIndex, 1);
-                }
-            }
-            
-            // Now assign remaining people from shift pool
-            // Sort unassigned to ensure consistent assignment
-            unassigned.sort((a, b) => a - b);
-            
-            for (let i = 0; i < unassigned.length; i++) {
-                const id = unassigned[i];
-                // Rotate through remaining shifts
-                const shiftIndex = (blockIndex + i) % shiftPool.length;
-                const shift = shiftPool[shiftIndex];
-                
-                assignments[id] = shift;
-            }
-            
-            // FINAL SAFETY CHECK - Absolutely no C -> A/G violations
-            for (let id of hadCYesterday) {
-                if (assignments[id] === 'A' || assignments[id] === 'G') {
-                    // Force fix - change to B
-                    console.error(`CRITICAL: Forcing fix for employee ${id} - had C yesterday, got ${assignments[id]} today`);
-                    assignments[id] = 'B';
-                }
-            }
-            
-            // Build full assignments
-            const fullAssignments = {};
-            for (let id of empIds) {
-                if (offToday.has(id)) {
-                    fullAssignments[id] = 'OFF';
-                    prevShift[id] = 'OFF';
+                if (offToday.includes(id)) {
+                    assignments[id] = 'OFF';
                 } else {
-                    fullAssignments[id] = assignments[id];
-                    prevShift[id] = assignments[id];
+                    const startShift = employeeShifts[id];
+                    const startIndex = shiftSequence.indexOf(startShift);
+                    const shiftIndex = (startIndex + rotationStep) % 4;
+                    let shift = shiftSequence[shiftIndex];
+                    
+                    // C Rest Rule: If yesterday was C, today cannot be A or G
+                    if (lastShift[id] === 'C' && (shift === 'A' || shift === 'G')) {
+                        shift = 'B';
+                        restViolations.push({ date: dateStr, employee: emp.name });
+                    }
+                    
+                    assignments[id] = shift;
                 }
-            }
+            });
             
-            // Count shifts for display
-            const shiftCounts = {A:0, B:0, C:0, G:0, OFF:0};
-            for (let id of empIds) {
-                shiftCounts[fullAssignments[id]]++;
-            }
+            // Update counts and last shift
+            employees.forEach(emp => {
+                const id = emp.id;
+                const shift = assignments[id];
+                
+                if (shift) {
+                    if (shift === 'OFF') {
+                        shiftCounts[id].OFF++;
+                    } else {
+                        shiftCounts[id][shift]++;
+                    }
+                    lastShift[id] = shift;
+                }
+            });
             
-            const rotationBlockNum = Math.floor((day - 1) / rotationPeriod) + 1;
-            
-            // Create prev C display
-            const prevCDisplay = hadCYesterday.length > 0 ? hadCYesterday.map(id => {
-                const emp = employees.find(e => e.id === id);
-                return emp ? emp.name.substring(0,3) : '';
-            }).join(',') : 'None';
-            
-            rosterDays.push({
-                date: fullDate,
+            roster.push({
+                date: dateStr,
                 day: dayName,
-                rotationBlock: rotationBlockNum,
-                prevC: prevCDisplay,
-                assignments: fullAssignments,
-                availableCount: availableIds.length,
-                hadCYesterday: hadCYesterday
+                cycle: rotationStep + 1,
+                assignments: assignments
             });
         }
 
-        currentRoster = rosterDays;
+        currentRoster = roster;
         renderRosterTable();
+        renderSummary(daysInMonth);
     }
 
+    // Render roster table with editable cells
     function renderRosterTable() {
         if (!currentRoster.length) return;
-        const empList = employees;
-        const empIds = empList.map(e => e.id);
 
-        let thead = `<tr><th>Date</th><th>Day</th><th>Block</th><th>Prev C</th>`;
-        empList.forEach(e => thead += `<th>${e.name}<br><small>Start:${employeeShifts[e.id] || 'A'}</small></th>`);
-        thead += `</tr>`;
+        // Build header
+        let thead = '<tr><th>Date</th><th>Day</th><th>Cycle</th>';
+        employees.forEach(emp => {
+            const startShift = employeeShifts[emp.id] || 'A';
+            thead += `<th>${emp.name}<br><span style="font-size:0.7rem; font-weight:normal;">Start:${startShift}</span></th>`;
+        });
+        thead += '</tr>';
 
+        // Build body with clickable cells
         let tbody = '';
-        let prevBlock = 0;
+        let lastCycle = 0;
         
-        for (let day of currentRoster) {
-            if (day.rotationBlock !== prevBlock && prevBlock !== 0) {
-                tbody += `<tr style="border-top: 3px solid #1e3a5f;"><td colspan="${3 + empList.length}" style="background: #e9eff7; font-weight: bold; text-align: center;">🔁 Rotation Block ${day.rotationBlock} Starts</td></tr>`;
+        currentRoster.forEach((day, rowIdx) => {
+            // Add separator for new cycles
+            if (day.cycle !== lastCycle && lastCycle !== 0) {
+                tbody += `<tr style="border-top: 3px solid #1e3a5f;"><td colspan="${3 + employees.length}" style="background: #e9eff7; text-align: center; font-weight: bold;">🔄 Cycle ${day.cycle} Starts</td></tr>`;
             }
             
-            let row = `<tr>`;
+            let row = '<tr>';
             row += `<td>${day.date}</td>`;
             row += `<td>${day.day}</td>`;
-            row += `<td style="background: #e9eff7; font-weight: bold;">B${day.rotationBlock}</td>`;
-            row += `<td>${day.prevC}</td>`;
+            row += `<td style="background: #e9eff7;">C${day.cycle}</td>`;
             
-            for (let id of empIds) {
-                const shift = day.assignments[id] || '?';
+            employees.forEach((emp, colIdx) => {
+                const shift = day.assignments[emp.id] || '?';
                 let cssClass = '';
+                
                 if (shift === 'OFF') cssClass = 'shift-OFF';
                 else if (shift === 'A') cssClass = 'shift-A';
                 else if (shift === 'B') cssClass = 'shift-B';
                 else if (shift === 'C') cssClass = 'shift-C';
                 else if (shift === 'G') cssClass = 'shift-G';
                 
-                // Highlight if this person had C yesterday (to verify they didn't get A/G)
-                if (day.hadCYesterday && day.hadCYesterday.includes(id)) {
-                    if (shift === 'A' || shift === 'G') {
-                        // This should NEVER happen - mark as error
-                        cssClass += ' rest-violation';
-                        console.error(`VIOLATION: ${employees.find(e => e.id === id)?.name} had C yesterday but got ${shift} today`);
-                    }
-                }
-                
-                row += `<td class="${cssClass}">${shift}</td>`;
-            }
+                // Add click handler
+                row += `<td class="${cssClass}" onclick="window.editShift(${rowIdx}, ${colIdx}, '${emp.id}', '${day.date}', '${shift}')">${shift}</td>`;
+            });
             
-            row += `</tr>`;
+            row += '</tr>';
             tbody += row;
-            
-            prevBlock = day.rotationBlock;
-        }
+            lastCycle = day.cycle;
+        });
 
         rosterTable.innerHTML = `<thead>${thead}</thead><tbody>${tbody}</tbody>`;
+        
+        // Make edit function available globally
+        window.editShift = function(rowIdx, colIdx, empId, date, currentShift) {
+            editRowIndex = rowIdx;
+            editColIndex = colIdx;
+            editEmployeeId = empId;
+            editDate = date;
+            
+            const employee = employees.find(e => e.id == empId);
+            editTitle.textContent = `Edit Shift for ${employee.name}`;
+            editInfo.textContent = `Date: ${date} | Current: ${currentShift}`;
+            editShiftSelect.value = currentShift;
+            
+            editOverlay.style.display = 'block';
+            editModal.style.display = 'block';
+        };
     }
 
-    generateBtn.addEventListener('click', () => {
-        generateRoster();
+    // Save edited shift
+    saveEditBtn.addEventListener('click', function() {
+        if (editRowIndex !== null && editEmployeeId) {
+            const newShift = editShiftSelect.value;
+            
+            // Update the roster data
+            currentRoster[editRowIndex].assignments[editEmployeeId] = newShift;
+            
+            // Close modal
+            editOverlay.style.display = 'none';
+            editModal.style.display = 'none';
+            
+            // Re-render table
+            renderRosterTable();
+        }
     });
 
-    jpgBtn.addEventListener('click', function() {
+    // Cancel edit
+    cancelEditBtn.addEventListener('click', function() {
+        editOverlay.style.display = 'none';
+        editModal.style.display = 'none';
+    });
+
+    // Update summary from current roster
+    function updateSummary() {
+        if (!currentRoster.length) return;
+        
+        // Reset counts
+        shiftCounts = {};
+        employees.forEach(emp => {
+            shiftCounts[emp.id] = { A: 0, B: 0, C: 0, G: 0, OFF: 0 };
+        });
+        
+        // Recalculate from current roster
+        currentRoster.forEach(day => {
+            employees.forEach(emp => {
+                const id = emp.id;
+                const shift = day.assignments[id];
+                if (shift && shift !== '?') {
+                    shiftCounts[id][shift]++;
+                }
+            });
+        });
+        
+        renderSummary();
+    }
+
+    // Render summary
+    function renderSummary() {
+        let summaryHtml = '';
+        let totalViolations = restViolations.length;
+        
+        employees.forEach(emp => {
+            const counts = shiftCounts[emp.id];
+            const totalWorking = counts.A + counts.B + counts.C + counts.G;
+            
+            summaryHtml += `
+                <div class="summary-card">
+                    <div class="summary-employee">${emp.name}</div>
+                    <div class="summary-stats">
+                        <div class="stat-item">A: ${counts.A}</div>
+                        <div class="stat-item">B: ${counts.B}</div>
+                        <div class="stat-item">C: ${counts.C}</div>
+                        <div class="stat-item">G: ${counts.G}</div>
+                        <div class="stat-item">OFF: ${counts.OFF}</div>
+                        <div class="stat-item">Total: ${totalWorking}</div>
+                    </div>
+                </div>
+            `;
+        });
+        
+        summaryGrid.innerHTML = summaryHtml;
+        
+        // Rest rule summary
+        if (totalViolations === 0) {
+            restSummary.innerHTML = '✅ C Rest Rule: No violations detected';
+            restSummary.style.color = '#4CAF50';
+        } else {
+            restSummary.innerHTML = `⚠️ C Rest Rule: ${totalViolations} violations fixed`;
+            restSummary.style.color = '#FFC107';
+        }
+        
+        summarySection.style.display = 'block';
+    }
+
+    // Generate button
+    generateBtn.addEventListener('click', generateRoster);
+
+    // Update Summary button
+    updateSummaryBtn.addEventListener('click', updateSummary);
+
+    // JPG Export
+    jpgBtn.addEventListener('click', async function() {
         if (!currentRoster.length) { alert('Generate roster first'); return; }
-        const container = document.getElementById('rosterTableContainer');
-        html2canvas(container, { scale: 1.5, backgroundColor: '#ffffff' }).then(canvas => {
+        
+        try {
+            jpgBtn.textContent = '📸 Capturing...';
+            jpgBtn.disabled = true;
+            jpgStatus.style.display = 'none';
+            
+            // Create wrapper with all content
+            const wrapper = document.createElement('div');
+            wrapper.style.backgroundColor = '#ffffff';
+            wrapper.style.padding = '20px';
+            wrapper.style.width = '100%';
+            
+            const title = document.createElement('h2');
+            title.style.textAlign = 'center';
+            title.style.color = '#1e3a5f';
+            title.textContent = `24/7 Industrial Roster - ${monthYearHeading.textContent}`;
+            
+            const rosterClone = rosterTable.cloneNode(true);
+            rosterClone.style.width = '100%';
+            
+            const summaryClone = summarySection.cloneNode(true);
+            summaryClone.style.display = 'block';
+            
+            wrapper.appendChild(title);
+            wrapper.appendChild(rosterClone);
+            wrapper.appendChild(summaryClone);
+            
+            document.body.appendChild(wrapper);
+            
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            const canvas = await html2canvas(wrapper, { scale: 2 });
+            
+            document.body.removeChild(wrapper);
+            
             const link = document.createElement('a');
             link.download = `roster_${monthPicker.value}.jpg`;
             link.href = canvas.toDataURL('image/jpeg', 0.95);
             link.click();
-        }).catch(() => alert('JPG export failed'));
+            
+            jpgStatus.style.display = 'block';
+            setTimeout(() => jpgStatus.style.display = 'none', 3000);
+            
+            jpgBtn.textContent = '📸 Download JPG';
+            jpgBtn.disabled = false;
+        } catch (error) {
+            alert('JPG export failed');
+            jpgBtn.textContent = '📸 Download JPG';
+            jpgBtn.disabled = false;
+        }
     });
 
+    // Excel Export
     excelBtn.addEventListener('click', function() {
-        if (!currentRoster.length || !employees.length) { alert('Generate roster first'); return; }
+        if (!currentRoster.length) { alert('Generate roster first'); return; }
 
         const empNames = employees.map(e => `${e.name} (Start:${employeeShifts[e.id] || 'A'})`);
-        const data = [['Date', 'Day', 'Rotation Block', 'Previous C', ...empNames]];
-        for (let day of currentRoster) {
-            const row = [day.date, day.day, `Block ${day.rotationBlock}`, day.prevC];
-            employees.forEach(e => {
-                row.push(day.assignments[e.id] || '?');
-            });
+        const data = [['Date', 'Day', 'Cycle', ...empNames]];
+        
+        currentRoster.forEach(day => {
+            const row = [day.date, day.day, `Cycle ${day.cycle}`];
+            employees.forEach(e => row.push(day.assignments[e.id] || '?'));
             data.push(row);
-        }
+        });
 
         const wb = XLSX.utils.book_new();
         const ws = XLSX.utils.aoa_to_sheet(data);
@@ -755,16 +1014,13 @@
             
             employeeShifts = {
                 101: 'A',
-                102: 'B', 
+                102: 'B',
                 103: 'C',
                 104: 'G'
             };
             
             renderEmployeeList();
-            
-            setTimeout(() => {
-                generateRoster();
-            }, 200);
+            setTimeout(generateRoster, 200);
         }
     }, 100);
 })();
